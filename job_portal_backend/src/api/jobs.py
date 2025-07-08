@@ -61,6 +61,59 @@ def employer_required(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Employers only.")
     return current_user
 
+from .applications import EmployerApplicationResponse  # For reusing response model
+
+# PUBLIC_INTERFACE
+@router.get(
+    "/employer/jobs",
+    summary="List jobs posted by the current employer",
+    response_model=List[EmployerJobResponse]
+)
+def list_employer_jobs(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(employer_required)
+):
+    """
+    Get all jobs posted by the authenticated employer.
+    """
+    jobs = db.query(Job).filter(Job.employer_id == current_user.id).order_by(Job.posted_at.desc()).all()
+    return jobs
+
+# PUBLIC_INTERFACE
+@router.get(
+    "/{job_id}/applications",
+    summary="Get all applications for a specific job (employer only)",
+    response_model=List[EmployerApplicationResponse],
+    tags=["Applications"]
+)
+def get_applications_for_job(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(employer_required)
+):
+    """
+    Get all applications submitted to a job (employer only)
+    """
+    from src.models import Application, Job  # Import here to avoid circular import
+    job = db.query(Job).filter(Job.id == job_id, Job.employer_id == current_user.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or not owned by employer.")
+
+    apps = db.query(Application).filter(Application.job_id == job_id).order_by(Application.applied_at.desc()).all()
+    # Return with applicant info
+    resp = []
+    for app in apps:
+        resp.append(EmployerApplicationResponse(
+            id=app.id,
+            job_id=app.job_id,
+            user_id=app.user_id,
+            applied_at=app.applied_at,
+            cover_letter=app.cover_letter,
+            applicant_name=app.user.full_name if getattr(app.user, "full_name", None) else None,
+            applicant_email=app.user.email if getattr(app.user, "email", None) else None,
+        ))
+    return resp
+
 # ----------- API Endpoints -----------
 
 # PUBLIC_INTERFACE

@@ -23,6 +23,7 @@ def get_db():
 
 class UserProfileResponse(BaseModel):
     id: int
+    username: str
     email: EmailStr
     full_name: Optional[str]
     role: UserRole
@@ -78,3 +79,17 @@ def update_my_profile(
     db.refresh(current_user)
     return current_user
 
+# PUBLIC_INTERFACE
+@router.put(
+    "",
+    summary="Update current user's profile (root PUT)",
+    description="Allows updating profile using /profile (PUT) as well.",
+    response_model=UserProfileResponse,
+)
+def put_profile_root(
+    req: UserProfileUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Alternate PUT /profile endpoint for frontend compatibility."""
+    return update_my_profile(req, db, current_user)

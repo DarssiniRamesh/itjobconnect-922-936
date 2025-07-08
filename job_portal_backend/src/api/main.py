@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .auth import router as auth_router
 from .jobs import router as jobs_router
+from .applications import router as applications_router
 
 app = FastAPI(
     title="IT Job Portal API",
@@ -20,6 +21,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(jobs_router)
+app.include_router(applications_router)
 
 @app.get("/")
 def health_check():

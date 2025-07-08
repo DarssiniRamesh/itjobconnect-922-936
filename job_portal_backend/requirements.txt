@@ -43,3 +43,5 @@ watchfiles==1.0.5
 websockets==15.0.1
 SQLAlchemy==2.0.30
 alembic==1.13.1
+passlib[bcrypt]==1.7.4
+pyjwt==2.8.0

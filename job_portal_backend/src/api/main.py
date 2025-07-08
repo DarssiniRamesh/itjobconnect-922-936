@@ -1,7 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from .auth import router as auth_router
+
+app = FastAPI(
+    title="IT Job Portal API",
+    version="1.0.0",
+    description="APIs for IT Job Portal - User registration, authentication, and job functionalities."
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -11,6 +17,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
+
 @app.get("/")
 def health_check():
+    """Health check endpoint for the API."""
     return {"message": "Healthy"}

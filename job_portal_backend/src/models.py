@@ -41,7 +41,7 @@ class Job(Base):
     posted_at = Column(DateTime, default=datetime.utcnow)
     employer_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
 
-    employer = relationship("User", back_populates="jobs")
+    employer = relationship("User", back_populates="jobs", lazy='joined')
     applications = relationship("Application", back_populates="job", cascade="all, delete")
 
 
